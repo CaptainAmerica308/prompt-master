@@ -6,7 +6,27 @@ A small **✨ Prompt Master** button sits in the band just above the composer. T
 
 While it works, the button reads **✨ Rewriting…**.
 
-## Install
+## Show it in every chat (desktop app)
+
+This is the reliable way to load the button in **every new chat** in the Claude desktop app. Name the mod folder in `CLAUDE_CODE_PLUGIN_DIRS`, which the app reads at startup:
+
+1. Put this mod at a stable folder, e.g. `~/.claude/mods/prompt-master` (clone this repo there, or copy the folder).
+2. In `~/.claude/settings.json`, add an `env` block pointing at that folder:
+
+   ```json
+   {
+     "env": {
+       "CLAUDE_CODE_PLUGIN_DIRS": "/Users/<you>/.claude/mods/prompt-master"
+     }
+   }
+   ```
+
+   Separate multiple folders with `:` (macOS/Linux) or `;` (Windows).
+3. Fully quit and reopen the app. The **✨ Prompt Master** button appears above the composer in every chat, and `/promptmaster` works too.
+
+Edits you make to the folder take effect on the next restart — no reinstall needed.
+
+## Install via marketplace (terminal)
 
 At the prompt of a terminal Claude Code session:
 
@@ -14,15 +34,13 @@ At the prompt of a terminal Claude Code session:
 /plugin install prompt-master --marketplace CaptainAmerica308/prompt-master
 ```
 
-Answer `y` to add the marketplace, then pick a scope (user scope is first).
-
-From a shell instead:
+Answer `y` to add the marketplace, then pick a scope (user scope is first). From a shell instead:
 
 ```
 claude plugin install prompt-master --marketplace CaptainAmerica308/prompt-master
 ```
 
-In the desktop app, where `/plugin` does not run: click **+** next to the prompt box, then **Plugins**, **Add marketplace** with `CaptainAmerica308/prompt-master`, then **Add plugin**.
+> **Note:** the `claude plugin install` / `/plugin` route currently loads hooks through the terminal CLI's *classic* command-hook loader, which rejects this mod's module hooks (`hooks/hooks.json` uses `{ "modules": ["./register.tsx"] }`) and reports `Hook load failed: expected record, received undefined`. To load the button in the desktop app, use the **Show it in every chat** method above instead.
 
 ## How it works
 
