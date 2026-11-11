@@ -1,0 +1,6 @@
+{
+  "name": "prompt-master",
+  "version": "0.1.0",
+  "description": "A Prompt Master button above the composer that rewrites your rough draft into a sharper prompt in place before you send.",
+  "types": "./types/index.d.ts"
+}
