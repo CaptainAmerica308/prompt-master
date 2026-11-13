@@ -1,49 +1,47 @@
 # Prompt Master
 
-A Claude Code mod that rewrites your rough draft into a sharper prompt — in place, before you send.
+Rewrites your rough draft into a sharper prompt before you send it. It preserves your intent and specifics, and it never answers the prompt: it only sharpens it.
 
-A small **✨ Prompt Master** button sits in the band just above the composer. Type a rough prompt, click the button (or run `/promptmaster`), and it rewrites your draft into a clear, well-structured prompt and drops it straight back into the box for you to review and send. It preserves your intent and specifics — it never answers the prompt, it just sharpens it.
+It ships in two forms, because no single mechanism reaches every kind of chat:
 
-While it works, the button reads **✨ Rewriting…**.
+| Where you are | What you get | How |
+| --- | --- | --- |
+| A Claude Code session (desktop Code tab, terminal) | **✨ Prompt Master** button above the composer, plus `/promptmaster` | the mod (plugin) |
+| Any chat, including normal Claude chats and the first message of a new session | `/prompt-master <rough prompt>` or "prompt master: <rough prompt>" | the skill |
 
-## Show it in every chat (desktop app)
+## 1. The button (Claude Code mod)
 
-This is the reliable way to load the button in **every new chat** in the Claude desktop app. Name the mod folder in `CLAUDE_CODE_PLUGIN_DIRS`, which the app reads at startup:
+Type a rough prompt, click **✨ Prompt Master** (or run `/promptmaster`), and the draft is rewritten in place for you to review and send. While it works, the button reads **✨ Rewriting…**.
 
-1. Put this mod at a stable folder, e.g. `~/.claude/mods/prompt-master` (clone this repo there, or copy the folder).
-2. In `~/.claude/settings.json`, add an `env` block pointing at that folder:
-
-   ```json
-   {
-     "env": {
-       "CLAUDE_CODE_PLUGIN_DIRS": "/Users/<you>/.claude/mods/prompt-master"
-     }
-   }
-   ```
-
-   Separate multiple folders with `:` (macOS/Linux) or `;` (Windows).
-3. Fully quit and reopen the app. The **✨ Prompt Master** button appears above the composer in every chat, and `/promptmaster` works too.
-
-Edits you make to the folder take effect on the next restart — no reinstall needed.
-
-## Install via marketplace (terminal)
-
-At the prompt of a terminal Claude Code session:
-
-```
-/plugin install prompt-master --marketplace CaptainAmerica308/prompt-master
-```
-
-Answer `y` to add the marketplace, then pick a scope (user scope is first). From a shell instead:
+Install at user scope so it loads in every session:
 
 ```
 claude plugin install prompt-master --marketplace CaptainAmerica308/prompt-master
 ```
 
-> **Note:** the `claude plugin install` / `/plugin` route currently loads hooks through the terminal CLI's *classic* command-hook loader, which rejects this mod's module hooks (`hooks/hooks.json` uses `{ "modules": ["./register.tsx"] }`) and reports `Hook load failed: expected record, received undefined`. To load the button in the desktop app, use the **Show it in every chat** method above instead.
+In the desktop app: click **+** next to the prompt box, then **Plugins**, **Add marketplace** with `CaptainAmerica308/prompt-master`, then **Add plugin**. Restart the app afterwards.
 
-## How it works
+Things to know:
+
+- **It needs a recent Claude Code engine.** Verified on 2.1.321. Older builds (2.1.150, for one) cannot read a hooks module and report `Hook load failed: expected record, received undefined`.
+- **The desktop app runs its own bundled engine, not the `claude` on your PATH.** If `claude plugin list` says the mod failed to load, check the version first: the app logs the binary it uses in `~/Library/Logs/Claude/main.log` (`Using Claude Code binary at: …`). Run `plugin list` with that binary to see the real status.
+- **The button is drawn by a running session's engine.** It cannot appear in normal Claude chats, which do not run Claude Code mods. Use the skill there.
+
+## 2. The skill (works in every chat)
+
+Claude Code (all sessions, from the first message):
+
+```
+mkdir -p ~/.claude/skills && cp -R skill/prompt-master ~/.claude/skills/
+```
+
+Then type `/prompt-master fix the login thing its broken on mobile` and you get the rewritten prompt back in a copyable block.
+
+Normal Claude chats (claude.ai and the desktop Chat tab): upload `prompt-master-skill.zip` under **Settings → Capabilities → Skills**, then say "prompt master: <your rough prompt>" in any chat.
+
+## How the mod works
 
 - `hooks/register.tsx` renders the button in the `AbovePrompt` band and registers the `/promptmaster` command.
 - On press it reads the current draft (`$.prompt.read`), rewrites it with a single `$.model.complete` call (Sonnet, medium effort), and replaces the draft (`$.prompt.fill`).
 - No draft is sent anywhere until you press Enter yourself.
+- `hooks/register.test.tsx` checks that the button draws on the terminal, desktop, VS Code and mobile surfaces: `claude plugin test .`
